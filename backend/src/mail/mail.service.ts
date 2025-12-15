@@ -1,5 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { NestApplicationContextOptions } from '@nestjs/common/interfaces/nest-application-context-options.interface';
 import * as nodemailer from 'nodemailer';
+import axios from 'axios';
 
 @Injectable()
 export class MailService {
@@ -17,18 +19,10 @@ export class MailService {
 
   async sendOtp(email: string, otp: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
-        from: `"Chat App" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Email Verification OTP',
-        html: `
-          <div style="font-family: Arial, sans-serif;">
-            <h2>Email Verification</h2>
-            <p>Your OTP is:</p>
-            <h1>${otp}</h1>
-            <p>This OTP is valid for <b>10 minutes</b>.</p>
-          </div>
-        `,
+      await axios.post('https://main-server-gamma.vercel.app/api/send', {
+        recipientEmail: email,
+
+        otp: otp,
       });
     } catch (error) {
       console.error('Email sending failed:', error);

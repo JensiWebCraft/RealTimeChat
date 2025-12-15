@@ -29,7 +29,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts",
-    "app/dashboard/page.jsx",
+    "app/dashboard/page.tsx",
     "middleware.js",
     "../backend/src/utils/mail.util.ts",
     "../backend/src/utils/otp.util.ts"

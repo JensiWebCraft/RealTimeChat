@@ -16,6 +16,7 @@ interface PrivateMessagePayload {
   receiver: string;
   text: string;
 }
+
 interface JoinRoomPayload {
   sender: string;
   receiver: string;
@@ -44,6 +45,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('Client disconnected:', client.id);
   }
 
+  // ✅ Join room
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
     @ConnectedSocket() client: Socket,
@@ -54,47 +56,67 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         payload.sender,
         payload.receiver,
       );
-      const socketRoom = room.roomKey;
 
-      client.join(socketRoom);
-      console.log(`User ${payload.sender} joined room: ${socketRoom}`);
+      client.join(room.roomKey);
 
+      // Get messages and normalize sender
       const messages = await this.chatService.getMessagesForRoom(room.id);
+      const formattedMessages = await Promise.all(
+        messages.map(async (m) => {
+          const senderUser = await this.prisma.user.findUnique({
+            where: { id: m.senderId },
+          });
+          return {
+            sender: senderUser?.username || '',
+            receiver: payload.receiver,
+            text: m.text,
+            createdAt: m.createdAt,
+          };
+        }),
+      );
 
-      client.emit('chatHistory', { messages });
+      client.emit('chatHistory', { messages: formattedMessages });
     } catch (error) {
-      console.error('Join room error:', error);
-      client.emit('error', { message: 'Failed to join room' });
+      console.error('Join room error:', error.message);
+      client.emit('error', { message: error.message });
     }
   }
 
+  // ✅ Send private message
   @SubscribeMessage('privateMessage')
   async handlePrivateMessage(@MessageBody() data: PrivateMessagePayload) {
     try {
+      // 1️⃣ Get or create room
       const room = await this.chatService.getOrCreateRoom(
         data.sender,
         data.receiver,
       );
-      const socketRoom = room.roomKey;
 
+      // 2️⃣ Find sender user
+      const senderUser = await this.prisma.user.findUnique({
+        where: { username: data.sender.trim() },
+      });
+
+      if (!senderUser) throw new Error('Sender user not found');
+
+      // 3️⃣ Save message
       const savedMessage = await this.prisma.message.create({
         data: {
           roomId: room.id,
-          senderId: data.sender,
-          text: data.text,
+          senderId: senderUser.id,
+          text: data.text.trim(),
         },
       });
 
-      const messageToSend = {
+      // 4️⃣ Emit message to room
+      this.server.to(room.roomKey).emit('privateMessage', {
         sender: data.sender,
         receiver: data.receiver,
         text: data.text,
         createdAt: savedMessage.createdAt,
-      };
-
-      this.server.to(socketRoom).emit('privateMessage', messageToSend);
+      });
     } catch (error) {
-      console.error('Send message error:', error);
+      console.error('Send message error:', error.message);
     }
   }
 }

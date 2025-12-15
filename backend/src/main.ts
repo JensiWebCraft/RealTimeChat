@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   dotenv.config();
@@ -12,6 +13,8 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
+
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   await app.listen(process.env.PORT || 3001);
   console.log('Backend   is running');

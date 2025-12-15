@@ -5,10 +5,9 @@
 // });
 
 // utils/socket.ts
+
 import { io } from "socket.io-client";
 
-export const socket = io("https://realtimechat-4uzm.onrender.com", {
-  // Change to your NestJS port
-  withCredentials: true,
-  transports: ["websocket"],
+export const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL as string, {
+  transports: ["polling", "websocket"],
 });
