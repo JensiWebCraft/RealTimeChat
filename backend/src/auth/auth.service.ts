@@ -42,21 +42,22 @@ export class AuthService {
         email,
         password: hashedPassword,
         otp: hashedOtp,
-        otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+        otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
         isVerified: false,
       },
     });
 
     try {
       await this.mailService.sendOtp(email, otp);
+      return { message: 'Registration successful. OTP sent to your email.' };
     } catch (error) {
-      await this.prisma.user.delete({ where: { id: user.id } });
-      throw new BadRequestException(
-        'Failed to send OTP email. Please try again.',
-      );
+      console.error('OTP sending failed, but user is saved in DB:', error);
+      // NO DELETE HERE – user stays so verify works
+      return {
+        message:
+          'Registration successful. OTP email failed – check Render logs for OTP (debug mode). Resend OTP if needed.',
+      };
     }
-
-    return { message: 'Registration successful. OTP sent to your email.' };
   }
 
   // 🔹 VERIFY OTP
