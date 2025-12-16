@@ -15,7 +15,7 @@ export default function VerifyOtpClient() {
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
-  // 🔹 Verify OTP
+  // ✅ Verify OTP
   const verifyOtp = async () => {
     if (!otp || otp.length !== 6) {
       setError("Please enter a valid 6-digit OTP");
@@ -38,18 +38,17 @@ export default function VerifyOtpClient() {
       if (!res.ok && data.message !== "Email already verified") {
         setError(data.message || "Verification failed");
       } else {
-        setSuccess(data.message);
+        setSuccess(data.message || "Email verified successfully");
         setTimeout(() => router.push("/login"), 1500);
       }
     } catch (err) {
-      console.error(err);
       setError("Network error. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Resend OTP
+  // ✅ Resend OTP
   const resendOtp = async () => {
     setResendLoading(true);
     setError("");
@@ -70,7 +69,6 @@ export default function VerifyOtpClient() {
         setError(data.message || "Failed to resend OTP");
       }
     } catch (err) {
-      console.error(err);
       setError("Network error. Try again.");
     } finally {
       setResendLoading(false);
@@ -78,19 +76,19 @@ export default function VerifyOtpClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0f1d] to-[#0f172a] flex items-center justify-center px-4">
-      <div className="bg-[#111827] border border-gray-700 rounded-2xl p-10 shadow-xl max-w-md w-full">
-        <h2 className="text-3xl font-bold text-center mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#0b141a] to-[#111b21] flex items-center justify-center px-4 text-white ">
+      <div className="bg-[#111B21] border border-[#1F2C33] rounded-2xl p-10  max-w-md w-full  shadow-[0_0_40px_rgba(37,211,102,0.15)]">
+        <h2 className="text-3xl font-bold text-center mb-6 text-[#25D366]">
           Verify Your Email
         </h2>
 
         <p className="text-gray-300 text-center mb-8">
           We sent a 6-digit OTP to{" "}
-          <span className="font-semibold">{email}</span>
+          <span className="font-semibold text-[#25D366]">{email}</span>
         </p>
 
         <input
-          className="w-full p-4 text-center text-2xl tracking-widest bg-[#0d1117] border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
+          className="w-full p-4 text-center text-2xl tracking-widest bg-[#0B141A] border border-[#1F2C33] rounded-lg focus:outline-none focus:border-[#25D366]"
           placeholder="------"
           maxLength={6}
           disabled={loading}
@@ -102,13 +100,13 @@ export default function VerifyOtpClient() {
 
         {error && <p className="text-red-400 text-center mt-4">{error}</p>}
         {success && (
-          <p className="text-green-400 text-center mt-4">{success}</p>
+          <p className="text-[#25D366] text-center mt-4">{success}</p>
         )}
 
         <button
           onClick={verifyOtp}
           disabled={loading}
-          className="w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 p-4 rounded-lg font-semibold transition"
+          className="w-full mt-6 bg-[#25D366] hover:bg-[#1EBE5D] disabled:opacity-70 p-4 rounded-lg font-semibold transition text-black"
         >
           {loading ? "Verifying..." : "Verify OTP"}
         </button>
@@ -119,7 +117,7 @@ export default function VerifyOtpClient() {
             <button
               onClick={resendOtp}
               disabled={resendLoading}
-              className="text-blue-400 hover:underline font-medium"
+              className="text-[#25D366] hover:underline font-medium"
             >
               {resendLoading ? "Sending..." : "Resend OTP"}
             </button>
