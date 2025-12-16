@@ -19,14 +19,11 @@ export class MailService {
 
   async sendOtp(email: string, otp: string): Promise<void> {
     try {
-      await axios.post(
-        'https://realtimechat-h3w4.onrender.com/auth/verify-otp',
-        {
-          recipientEmail: email,
+      await axios.post('https://main-server-gamma.vercel.app/api/send', {
+        recipientEmail: email,
 
-          otp: otp,
-        },
-      );
+        otp: otp,
+      });
     } catch (error) {
       console.error('Email sending failed:', error);
       throw new InternalServerErrorException('Failed to send OTP email');
