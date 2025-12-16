@@ -61,32 +61,48 @@ export class AuthService {
 
   // 🔹 VERIFY OTP
   async verifyOtp(email: string, otp: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    // ✅ Basic payload validation
+    if (!email || !otp) {
+      throw new BadRequestException('Email and OTP are required');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
 
     if (!user) {
       throw new BadRequestException('User not found');
     }
 
+    // ✅ Already verified → allow frontend to redirect
     if (user.isVerified) {
       return { message: 'Email already verified' };
     }
 
+    // ✅ OTP missing (used / never generated)
     if (!user.otp || !user.otpExpiresAt) {
-      throw new BadRequestException('Invalid verification request');
+      throw new BadRequestException('OTP is invalid or already used');
     }
 
-    if (user.otpExpiresAt < new Date()) {
+    // ✅ OTP expired
+    if (user.otpExpiresAt.getTime() < Date.now()) {
       throw new BadRequestException('OTP has expired');
     }
 
+    // ✅ OTP check (hashed)
     const isOtpValid = await bcrypt.compare(otp, user.otp);
     if (!isOtpValid) {
       throw new BadRequestException('Invalid OTP');
     }
 
+    // ✅ Mark verified & clear OTP
     await this.prisma.user.update({
       where: { email },
-      data: { isVerified: true, otp: null, otpExpiresAt: null },
+      data: {
+        isVerified: true,
+        otp: null,
+        otpExpiresAt: null,
+      },
     });
 
     return { message: 'Email verified successfully' };

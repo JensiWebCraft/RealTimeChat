@@ -15,6 +15,7 @@ export class AuthController {
 
   @Post('verify-otp')
   verifyOtp(@Body() body: { email: string; otp: string }) {
+    console.log('VERIFY OTP BODY:', body);
     return this.authService.verifyOtp(body.email, body.otp);
   }
 
