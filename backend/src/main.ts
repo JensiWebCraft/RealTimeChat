@@ -8,7 +8,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://real-time-chat-navy.vercel.app'],
+    origin: [
+      'http://localhost:3000',
+      'https://real-time-chat-rho-one.vercel.app',
+    ],
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
