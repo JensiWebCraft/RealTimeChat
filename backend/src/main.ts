@@ -9,7 +9,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      'http://localhost:3000',
+      // 'http://localhost:3000',
       'https://real-time-chat-rho-one.vercel.app',
     ],
     methods: ['GET', 'POST'],
