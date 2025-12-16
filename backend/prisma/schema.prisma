@@ -8,13 +8,12 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  username  String   @unique
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-
-   isVerified   Boolean  @default(false)
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  username     String    @unique
+  email        String    @unique
+  password     String
+  createdAt    DateTime  @default(now())
+  isVerified   Boolean   @default(false)
   otp          String?
   otpExpiresAt DateTime?
 
@@ -24,22 +23,23 @@ model User {
 model ChatRoom {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   roomKey   String    @unique
-  user1     String
-  user2     String
+  user1     String    @db.ObjectId
+  user2     String    @db.ObjectId
   messages  Message[] @relation("RoomMessages")
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([user1, user2])
 }
 
 model Message {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  roomId    String   @db.ObjectId
-  room      ChatRoom @relation("RoomMessages", fields: [roomId], references: [id])
- senderId  String   @db.ObjectId
-sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  roomId    String    @db.ObjectId
+  room      ChatRoom  @relation("RoomMessages", fields: [roomId], references: [id])
+  senderId  String    @db.ObjectId
+  sender    User      @relation("SentMessages", fields: [senderId], references: [id])
   text      String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  seenAt    DateTime? // ← NEW: null = not seen, timestamp = seen by receiver
 
   @@index([roomId])
   @@index([createdAt])
