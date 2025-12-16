@@ -14,7 +14,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly mailService: MailService, // ✅ MailService injected
+    private readonly mailService: MailService,
   ) {}
 
   // 🔹 REGISTER WITH OTP
@@ -49,19 +49,20 @@ export class AuthService {
 
     try {
       await this.mailService.sendOtp(email, otp);
+      return { message: 'Registration successful. OTP sent to your email.' };
     } catch (error) {
-      await this.prisma.user.delete({ where: { id: user.id } });
-      throw new BadRequestException(
-        'Failed to send OTP email. Please try again.',
-      );
+      console.error('OTP sending failed, but user remains in DB:', error);
+      // IMPORTANT: Do NOT delete the user here!
+      // User stays so verification can still work (use OTP from logs in debug mode)
+      return {
+        message:
+          'Registration successful. OTP email failed, but check Render logs for OTP (debug mode). You can resend OTP.',
+      };
     }
-
-    return { message: 'Registration successful. OTP sent to your email.' };
   }
 
-  // 🔹 VERIFY OTP
+  // 🔹 VERIFY OTP (unchanged - it's correct)
   async verifyOtp(email: string, otp: string) {
-    // ✅ Basic payload validation
     if (!email || !otp) {
       throw new BadRequestException('Email and OTP are required');
     }
@@ -74,28 +75,23 @@ export class AuthService {
       throw new BadRequestException('User not found');
     }
 
-    // ✅ Already verified → allow frontend to redirect
     if (user.isVerified) {
       return { message: 'Email already verified' };
     }
 
-    // ✅ OTP missing (used / never generated)
     if (!user.otp || !user.otpExpiresAt) {
       throw new BadRequestException('OTP is invalid or already used');
     }
 
-    // ✅ OTP expired
     if (user.otpExpiresAt.getTime() < Date.now()) {
       throw new BadRequestException('OTP has expired');
     }
 
-    // ✅ OTP check (hashed)
     const isOtpValid = await bcrypt.compare(otp, user.otp);
     if (!isOtpValid) {
       throw new BadRequestException('Invalid OTP');
     }
 
-    // ✅ Mark verified & clear OTP
     await this.prisma.user.update({
       where: { email },
       data: {
@@ -108,7 +104,7 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
-  // 🔹 LOGIN
+  // 🔹 LOGIN (unchanged - correct)
   async login(identifier: string, password: string) {
     const user = await this.prisma.user.findFirst({
       where: { OR: [{ username: identifier }, { email: identifier }] },
@@ -133,7 +129,7 @@ export class AuthService {
     };
   }
 
-  // 🔹 RESEND OTP
+  // 🔹 RESEND OTP (unchanged - already good, no user deletion)
   async resendOtp(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new BadRequestException('User not found');
@@ -155,7 +151,6 @@ export class AuthService {
       await this.mailService.sendOtp(email, otp);
     } catch (error) {
       console.error('OTP email failed:', error);
-      // ❌ DO NOT DELETE USER
       throw new BadRequestException(
         'Failed to send OTP email. Please try resend OTP.',
       );
