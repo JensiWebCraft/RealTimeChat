@@ -65,7 +65,7 @@ export class AuthService {
     if (!email || !otp) {
       throw new BadRequestException('Email and OTP are required');
     }
-
+    email = email.trim().toLowerCase();
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
