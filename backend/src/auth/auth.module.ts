@@ -1,19 +1,17 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtModule } from '@nestjs/jwt';
-import { MailModule } from '../mail/mail.module';
+import { AuthService } from './auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { JwtModule } from '@nestjs/jwt';
+import { MailService } from '../mail/mail.service';
 
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'default_secret',
-      signOptions: { expiresIn: '1d' },
+      secret: process.env.JWT_SECRET || 'fallback-secret',
     }),
-    MailModule, // ✅ Mail service module
   ],
-  controllers: [AuthController], // ✅ Add controller
-  providers: [AuthService, PrismaService], // ✅ Add AuthService & PrismaService
+  controllers: [AuthController], // This line was missing
+  providers: [AuthService, PrismaService, MailService],
 })
 export class AuthModule {}
