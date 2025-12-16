@@ -5,6 +5,6 @@ export async function fetchUsers() {
   return res.json();
 }
 
-// export const backendUrl = " https://realtimechat-4uzm.onrender.com";
+export const backendUrl = "https://realtimechat-h3w4.onrender.com";
 
-export const backendUrl = "http://localhost:3001";
+// export const backendUrl = "http://localhost:3001";
