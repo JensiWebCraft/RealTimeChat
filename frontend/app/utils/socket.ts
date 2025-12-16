@@ -8,6 +8,6 @@
 
 import { io } from "socket.io-client";
 
-export const socket = io("https://localhost:3000", {
+export const socket = io("https://realtimechat-h3w4.onrender.com", {
   transports: ["polling", "websocket"],
 });
