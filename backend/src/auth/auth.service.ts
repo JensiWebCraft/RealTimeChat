@@ -153,8 +153,12 @@ export class AuthService {
 
     try {
       await this.mailService.sendOtp(email, otp);
-    } catch (err) {
-      throw new BadRequestException('Failed to send OTP. Try again.');
+    } catch (error) {
+      console.error('OTP email failed:', error);
+      // ❌ DO NOT DELETE USER
+      throw new BadRequestException(
+        'Failed to send OTP email. Please try resend OTP.',
+      );
     }
 
     return { message: 'New OTP sent to your email' };
